@@ -6,12 +6,12 @@ import {createStackNavigator} from '@react-navigation/stack';
 import Login from './login/Login';
 import Signup from './signup/Signup';
 import Dashboard from './dashboard/Dashboard';
-// import TaskList from './tasklist/TaskList';
+import TaskList from './tasklist/TaskList';
 
 // const Login = () => <Text>Login</Text>;
 // const Signup = () => <Text>Signup</Text>;
 // const Dashboard = () => <Text>Dashboard</Text>;
-const TaskList = () => <Text>TaskList</Text>;
+// const TaskList = () => <Text>TaskList</Text>;
 export default function AppNavigator() {
   const Stack = createStackNavigator();
   const AuthStack = createStackNavigator();

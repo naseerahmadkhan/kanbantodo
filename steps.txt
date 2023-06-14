@@ -12,3 +12,4 @@ npm i formik yup
 npm i validator
 npm i @react-native-async-storage/async-storage
 npm install firebase
+npm i date-and-time

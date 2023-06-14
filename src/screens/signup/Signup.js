@@ -168,21 +168,23 @@ export default function Signup({navigation, route}) {
 
               <Button
                 style={{margin: 16}}
-                onPress={() => handleSubmit(values)}
-                title="Submit!"
-                color={styles.btnPrimary}
-              />
+                icon="home"
+                mode="contained"
+                buttonColor={styles.btnPrimary}
+                onPress={() => handleSubmit(values)}>
+                Submit
+              </Button>
             </View>
           )}
         </Formik>
 
         <Button
-          style={{margin: 20, marginTop: 50}}
+          style={{margin: 16}}
           icon="arrow-right-bold"
           mode="contained"
           buttonColor={styles.btntertiary}
           onPress={() => navigation.replace('Login')}>
-          Submit
+          Already registerd! Back to Login.
         </Button>
 
         {/* ----------------- */}

@@ -40,13 +40,14 @@ export default function Dashboard({route, navigation}) {
 
   const [showCreateBoardDialog, setShowCreateBoardDialog] = useState(false);
   const [boardName, setBoardName] = useState('');
-  const [boardList, setBoardList] = useState([]);
+
+    const [boardList, setBoardList] = useState([]);
   const [existingBoardName, setExistingBoardName] = useState({visible: false});
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitted, setIsSubmitted] = useState(false);
 
   const getDataFromDB = async () => {
-    const boardList = [];
+    const boardListTemp = [];
     const docRef = doc(db, 'todo', route.params.email);
     const docSnap = await getDoc(docRef);
     if (docSnap.exists()) {
@@ -56,10 +57,10 @@ export default function Dashboard({route, navigation}) {
       jsonData.boardList &&
         jsonData.boardList.map((item, index) => {
           // console.log(`item:${JSON.stringify(item)} index:${index}`)
-          boardList.push(item);
+          boardListTemp.push(item);
         });
       setIsLoading(false);
-      return boardList;
+      return boardListTemp;
     } else {
       // doc.data() will be undefined in this case
       console.log('No such document!');
@@ -79,36 +80,9 @@ export default function Dashboard({route, navigation}) {
 
   const hideDialog = () => setShowCreateBoardDialog(false);
 
-  const saveBoardNameInList = async () => {
-    setIsSubmitted(true);
-    const now = new Date();
-    const formattedDate = date.format(now, 'DD-MMMM-YYYY HH:mm:ss A');
-    const newBoardEntry = {boardName, date: formattedDate, todo: []};
-    boardList.push(newBoardEntry);
-
-    storeData.data = boardList;
-
-    try {
-      let email = route.params.email;
-      // let insertInFirebaseDB = await setDoc(doc(db, "todo", email),boardListDataToBeSendInDB);
-      const todoRef = doc(db, 'todo', email);
-
-      // Set the "capital" field of the city 'DC'
-      await updateDoc(todoRef, {
-        boardList: boardList,
-      });
-
-      console.log('instered in db');
-    } catch (err) {
-      console.log('err', err);
-    } finally {
-      setShowCreateBoardDialog(false);
-      setIsSubmitted(false);
-    }
-  };
-
   const updateBoard = async updatedBoardList => {
     try {
+      //route.params.email
       const docRef = doc(db, 'todo', storeData.email);
       await updateDoc(docRef, {
         boardList: updatedBoardList,
@@ -122,20 +96,48 @@ export default function Dashboard({route, navigation}) {
     }
   };
 
+  const saveBoardNameInList = async () => {
+    setIsSubmitted(true);
+    const now = new Date();
+    const formattedDate = date.format(now, 'DD-MMMM-YYYY HH:mm:ss A');
+    const newBoardEntry = {boardName, date: formattedDate, todo: []};
+    const beforeAddingBoardList = storeData.data.slice();
+    const updatedBoardList = storeData.data.slice();
+    // boardList.push(newBoardEntry);
+    updatedBoardList.push(newBoardEntry);
+
+    // storeData.data = boardList;
+
+    try {
+      await updateBoard(updatedBoardList);
+      storeData.data = updatedBoardList;
+      setBoardList(updatedBoardList);
+      console.log('instered in db');
+    } catch (err) {
+      setBoardList(beforeAddingBoardList);
+      console.log('err', err);
+    } finally {
+      setShowCreateBoardDialog(false);
+      setIsSubmitted(false);
+    }
+  };
+
   // ! update board
   const updateBoardNameInList = async () => {
     setIsSubmitted(true);
     console.log(boardName, existingBoardName.boardName);
-    let boardListBeforeUpdate = storeData.data.slice(); //duplicate array data
-    let updatedBoardList = storeData.data;
-    updatedBoardList.forEach(item => {
-      console.log('item', item);
-      if (item.boardName == existingBoardName.boardName) {
+    const boardListBeforeUpdate = boardList.slice(); //duplicate array data
+    const updatedBoardList = boardListBeforeUpdate.slice(); //duplicate array data
+    
+     updatedBoardList.forEach(item => {
+      if (item.boardName === existingBoardName.boardName) {
         item.boardName = boardName;
       }
     });
 
+
     try {
+      console.log('before update....');
       await updateBoard(updatedBoardList);
       storeData.data = updatedBoardList;
       setBoardList(updatedBoardList);
@@ -182,7 +184,6 @@ export default function Dashboard({route, navigation}) {
     console.log('edit', item);
     setExistingBoardName(prev => ({...prev, boardName: item, visible: true}));
     setBoardName(item);
-    console.log('test', existingBoardName);
   };
 
   const hideme = () => {
@@ -298,7 +299,7 @@ export default function Dashboard({route, navigation}) {
         </Dialog.Content>
         <Dialog.Actions>
           <Button
-            disabled={isSubmitted ? true : false}
+            // disabled={isSubmitted ? true : false}
             onPress={() => updateBoardNameInList()}>
             Ok
           </Button>

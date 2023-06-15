@@ -269,11 +269,13 @@ export default function TaskList({route, navigation}) {
 
     taskListBeforeAdding.push(newTodoData);
     let id = route.params.data.id;
-    storeData.data[id]['todo'] = taskListBeforeAdding;
+    storeData.data[id].todo = taskListBeforeAdding;
     let result = updateBoardListInDB(storeData.data);
-    if (result) setTaskList(taskListBeforeAdding);
-
-    setShowDialog(false);
+    if (result) {
+      setTaskList(taskListBeforeAdding);
+    } else {
+      setShowDialog(false);
+    }
   };
 
   const showTaskInDetail = (item, index) => {

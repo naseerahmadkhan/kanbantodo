@@ -94,8 +94,9 @@ export default function Dashboard({route, navigation}) {
       console.log('instered in db');
     } catch (err) {
       console.log('err', err);
+    } finally {
+      setShowCreateBoardDialog(false);
     }
-    hideDialog();
   };
 
   const updateBoard = async updatedBoardList => {

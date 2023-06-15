@@ -228,7 +228,7 @@ export default function Dashboard({route, navigation}) {
           })}
       </ScrollView>
 
-      <View style={{flex: 0.1, justifyContent: 'center', alignItems: 'center'}}>
+      <View style={{justifyContent: 'center', alignItems: 'center'}}>
         <FAB
           icon="plus"
           style={styles.fab}

@@ -1,8 +1,13 @@
 import {View, Text, Alert} from 'react-native';
-import React, {useContext, useEffect} from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import {Formik} from 'formik';
 import {LoginSchema} from './loginSchema';
-import {TextInput, Button} from 'react-native-paper';
+import {
+  TextInput,
+  Button,
+  ActivityIndicator,
+  MD2Colors,
+} from 'react-native-paper';
 import {styles} from '../../styles/styles';
 import {setUserLoggedIn, getUserLoggedIn} from '../../utils/helper';
 import {auth} from '../../config/auth/firebase';
@@ -37,6 +42,7 @@ import Header from '../../components/header/Header';
 
 export default function Login({navigation}) {
   const storeData = useContext(AppContext);
+  const [isLoading, setIsLoading] = useState(true);
 
   async function checkIsUserLoggedInBefore() {
     try {
@@ -47,10 +53,12 @@ export default function Login({navigation}) {
         storeData.email = email;
         storeData.uid = uid;
         console.log('>>', resultParsed);
-        navigation.navigate('DashboardStackScreens', {
+        navigation.replace('DashboardStackScreens', {
           screen: 'Dashboard',
           params: {email},
         });
+      }else{
+        setIsLoading(false)
       }
     } catch (e) {
       console.log('err...', e);
@@ -85,7 +93,7 @@ export default function Login({navigation}) {
       setUserLoggedIn({uid, email, auth: authResult});
       storeData.email = email;
       storeData.uid = uid;
-      navigation.navigate('DashboardStackScreens', {
+      navigation.replace('DashboardStackScreens', {
         screen: 'Dashboard',
         params: {email},
       });
@@ -117,8 +125,8 @@ export default function Login({navigation}) {
 
       <Formik
         initialValues={{
-          email: 'test@test.com',
-          password: '#NASeer0987',
+          email: '',
+          password: '',
         }}
         validationSchema={LoginSchema}
         onSubmit={values => handleSubmit(values)}>
@@ -138,6 +146,7 @@ export default function Login({navigation}) {
               onChangeText={handleChange('email')}
               onBlur={() => setFieldTouched('email')}
               label={'Email'}
+              style={{marginBottom:20}}
             />
 
             {touched.email && errors.email && (
@@ -184,9 +193,15 @@ export default function Login({navigation}) {
   );
 
   return (
-    <View>
+    <View style={{flex:1}}>
       <Header navigation={navigation} />
-      <View style={styles.container}>{LoginView}</View>
+      <View style={styles.container}>
+      {!isLoading && LoginView}
+      {isLoading && <View style={{flex:1,justifyContent:'center'}}>
+        <ActivityIndicator  animating={true} size={96} color={MD2Colors.blueA500}/>
+      </View>
+      }
+      </View>
     </View>
   );
 }

@@ -4,7 +4,7 @@ import {DefaultTheme, Provider} from 'react-native-paper';
 import React from 'react';
 import {AppContext, data} from './src/store/store';
 
-import {SafeAreaView, ScrollView, StatusBar, Text, View} from 'react-native';
+import {StatusBar, View} from 'react-native';
 
 export default function App() {
   const theme = {
@@ -18,7 +18,7 @@ export default function App() {
   };
 
   return (
-    <SafeAreaView style={styles.safearea}>
+    <View style={styles.safearea}>
       <StatusBar
         barStyle="default"
         hidden={true}
@@ -30,6 +30,6 @@ export default function App() {
           <AppNavigator />
         </AppContext.Provider>
       </Provider>
-    </SafeAreaView>
+    </View>
   );
 }

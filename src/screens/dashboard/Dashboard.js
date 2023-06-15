@@ -1,4 +1,4 @@
-import {View, StyleSheet, ScrollView} from 'react-native';
+import {View, ScrollView, Alert} from 'react-native';
 import React, {useEffect, useState, useContext} from 'react';
 import {
   FAB,
@@ -11,6 +11,8 @@ import {
   Dialog,
   Portal,
   Drawer,
+  ActivityIndicator,
+  MD2Colors,
 } from 'react-native-paper';
 // MaterialCommunityIcons can be used in react-native-paper
 
@@ -40,6 +42,8 @@ export default function Dashboard({route, navigation}) {
   const [boardName, setBoardName] = useState('');
   const [boardList, setBoardList] = useState([]);
   const [existingBoardName, setExistingBoardName] = useState({visible: false});
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSubmitted, setIsSubmitted] = useState(false);
 
   const getDataFromDB = async () => {
     const boardList = [];
@@ -54,10 +58,12 @@ export default function Dashboard({route, navigation}) {
           // console.log(`item:${JSON.stringify(item)} index:${index}`)
           boardList.push(item);
         });
+      setIsLoading(false);
       return boardList;
     } else {
       // doc.data() will be undefined in this case
       console.log('No such document!');
+      setIsLoading(false);
     }
   };
 
@@ -74,6 +80,7 @@ export default function Dashboard({route, navigation}) {
   const hideDialog = () => setShowCreateBoardDialog(false);
 
   const saveBoardNameInList = async () => {
+    setIsSubmitted(true);
     const now = new Date();
     const formattedDate = date.format(now, 'DD-MMMM-YYYY HH:mm:ss A');
     const newBoardEntry = {boardName, date: formattedDate, todo: []};
@@ -96,6 +103,7 @@ export default function Dashboard({route, navigation}) {
       console.log('err', err);
     } finally {
       setShowCreateBoardDialog(false);
+      setIsSubmitted(false);
     }
   };
 
@@ -116,8 +124,9 @@ export default function Dashboard({route, navigation}) {
 
   // ! update board
   const updateBoardNameInList = async () => {
+    setIsSubmitted(true);
     console.log(boardName, existingBoardName.boardName);
-
+    let boardListBeforeUpdate = storeData.data.slice(); //duplicate array data
     let updatedBoardList = storeData.data;
     updatedBoardList.forEach(item => {
       console.log('item', item);
@@ -127,25 +136,29 @@ export default function Dashboard({route, navigation}) {
     });
 
     try {
-      updateBoard(updatedBoardList);
+      await updateBoard(updatedBoardList);
       storeData.data = updatedBoardList;
       setBoardList(updatedBoardList);
     } catch (error) {
       alert(JSON.stringify(error));
       setBoardList(boardListBeforeUpdate);
+    } finally {
+      setBoardName('');
+      setIsSubmitted(false);
+      setExistingBoardName(prev => ({...prev, visible: false}));
     }
-
-    setBoardName('');
-    setExistingBoardName(prev => ({...prev, visible: false}));
   };
 
   // !
 
   const deleteBoard = async board => {
+    setIsSubmitted(true);
     console.log('delete', board.boardName);
     console.log('store', storeData.data);
-    let boardListBeforeDel = storeData.data;
-    let updatedBoardList = boardListBeforeDel.filter(function (item) {
+    let currentBoardList = storeData.data;
+
+    let boardListBeforeDel = storeData.data.slice(); //duplicate array data
+    let updatedBoardList = currentBoardList.filter(function (item) {
       //callback function
       if (item.boardName != board.boardName) {
         //filtering criteria
@@ -154,12 +167,14 @@ export default function Dashboard({route, navigation}) {
     });
     console.log('after del', updatedBoardList);
     try {
-      updateBoard(updatedBoardList);
+      await updateBoard(updatedBoardList);
       storeData.data = updatedBoardList;
       setBoardList(updatedBoardList);
     } catch (e) {
       setBoardList(boardListBeforeDel);
       alert(JSON.stringify(e));
+    } finally {
+      setIsSubmitted(false);
     }
   };
 
@@ -213,12 +228,15 @@ export default function Dashboard({route, navigation}) {
                           justifyContent: 'flex-end',
                         }}>
                         <Button
+                          disabled={isSubmitted ? true : false}
                           icon="pencil"
                           onPress={() => handleBoardEdit(item.boardName)}
                         />
                         <Button
+                          disabled={isSubmitted ? true : false}
                           icon="delete"
-                          onPress={() => deleteBoard(item)}
+                          // onPress={() => deleteBoard(item)}
+                          onPress={() => deleteBoardDialog(item)}
                         />
                       </View>
                     );
@@ -252,8 +270,14 @@ export default function Dashboard({route, navigation}) {
           />
         </Dialog.Content>
         <Dialog.Actions>
-          <Button onPress={() => saveBoardNameInList()}>Ok</Button>
-          <Button onPress={() => setShowCreateBoardDialog(false)}>
+          <Button
+            disabled={isSubmitted ? true : false}
+            onPress={() => saveBoardNameInList()}>
+            Ok
+          </Button>
+          <Button
+            disabled={isSubmitted ? true : false}
+            onPress={() => setShowCreateBoardDialog(false)}>
             Cancel
           </Button>
         </Dialog.Actions>
@@ -273,19 +297,50 @@ export default function Dashboard({route, navigation}) {
           />
         </Dialog.Content>
         <Dialog.Actions>
-          <Button onPress={() => updateBoardNameInList()}>Ok</Button>
-          <Button onPress={() => hideme()}>Cancel</Button>
+          <Button
+            disabled={isSubmitted ? true : false}
+            onPress={() => updateBoardNameInList()}>
+            Ok
+          </Button>
+          <Button
+            disabled={isSubmitted ? true : false}
+            onPress={() => hideme()}>
+            Cancel
+          </Button>
         </Dialog.Actions>
       </Dialog>
     </Portal>
   );
 
+  const deleteBoardDialog = item =>
+    Alert.alert(
+      'Delete Board',
+      `Are you really want to delete [${item.boardName}] board?`,
+      [
+        {
+          text: 'Cancel',
+          // onPress: () => console.log('Cancel Pressed'),
+          style: 'cancel',
+        },
+        {text: 'OK', onPress: () => deleteBoard(item)},
+      ],
+    );
+
   return (
     <>
       <Header navigation={navigation} />
-      {todoBoards}
+      {!isLoading && todoBoards}
       {showCreateBoardDialog && createBoardDialog}
       {existingBoardName.visible && updateBoardDialog}
+      {isLoading && (
+        <View style={{flex: 1, justifyContent: 'center'}}>
+          <ActivityIndicator
+            animating={true}
+            size={96}
+            color={MD2Colors.blueA500}
+          />
+        </View>
+      )}
     </>
   );
 }

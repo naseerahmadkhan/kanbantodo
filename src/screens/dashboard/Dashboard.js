@@ -41,7 +41,7 @@ export default function Dashboard({route, navigation}) {
   const [showCreateBoardDialog, setShowCreateBoardDialog] = useState(false);
   const [boardName, setBoardName] = useState('');
 
-    const [boardList, setBoardList] = useState([]);
+  const [boardList, setBoardList] = useState([]);
   const [existingBoardName, setExistingBoardName] = useState({visible: false});
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -127,14 +127,16 @@ export default function Dashboard({route, navigation}) {
     setIsSubmitted(true);
     console.log(boardName, existingBoardName.boardName);
     const boardListBeforeUpdate = boardList.slice(); //duplicate array data
-    const updatedBoardList = boardListBeforeUpdate.slice(); //duplicate array data
-    
-     updatedBoardList.forEach(item => {
+
+    const updatedBoardList = boardListBeforeUpdate.map(item => {
       if (item.boardName === existingBoardName.boardName) {
-        item.boardName = boardName;
+        let tempObj = Object.assign({}, item);
+        tempObj.boardName = boardName;
+        return tempObj;
+      } else {
+        return item;
       }
     });
-
 
     try {
       console.log('before update....');
@@ -157,10 +159,9 @@ export default function Dashboard({route, navigation}) {
     setIsSubmitted(true);
     console.log('delete', board.boardName);
     console.log('store', storeData.data);
-    let currentBoardList = storeData.data;
 
     let boardListBeforeDel = storeData.data.slice(); //duplicate array data
-    let updatedBoardList = currentBoardList.filter(function (item) {
+    let updatedBoardList = boardListBeforeDel.filter(function (item) {
       //callback function
       if (item.boardName != board.boardName) {
         //filtering criteria

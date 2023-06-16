@@ -81,18 +81,19 @@ export default function TaskList({route, navigation}) {
 
   const showActionDialogBox = (item, index) => {
     setShowActionDialog(true);
+    console.log(item, index);
     settodoMark({name: item.name, index});
   };
 
   const showDoingActionDialogBox = (item, index) => {
     setShowDoingActionDialog(true);
-    console.log(item);
+    console.log(item, index);
     settodoMark({name: item.name, index});
   };
 
   const showDoneActionDialogBox = (item, index) => {
     setShowDoneActionDialog(true);
-    console.log(item);
+    console.log(item, index);
     settodoMark({name: item.name, index});
   };
 
@@ -135,68 +136,69 @@ export default function TaskList({route, navigation}) {
   const taskUpdate = async (action, taskName) => {
     const boardId = route.params.data.id;
     const taskId = todoMark.index;
+    const item = storeData.data[boardId].todo[taskId];
     let updatedTaskList;
     let result;
 
-    for (const item of storeData.data[boardId].todo) {
-      switch (action) {
-        case 'done':
-          if (item.name == taskName) {
-            item.status = 'done';
-            result = await updateBoardListInDB(storeData.data);
-            if (result) {
-              updatedTaskList = storeData.data[boardId].todo;
-              setTaskList(updatedTaskList);
-            }
-          }
+    console.log('task id', taskId);
 
-          break;
-
-        case 'todo':
-          if (item.name == taskName) {
-            item.status = 'todo';
-            result = await updateBoardListInDB(storeData.data);
-            if (result) {
-              updatedTaskList = storeData.data[boardId].todo;
-              setTaskList(updatedTaskList);
-            }
-          }
-          break;
-
-        case 'doing':
-          if (item.name == taskName) {
-            item.status = 'doing';
-            result = await updateBoardListInDB(storeData.data);
-            if (result) {
-              updatedTaskList = storeData.data[boardId].todo;
-              setTaskList(updatedTaskList);
-            }
-          }
-          break;
-
-        case 'delete':
-          if (item.name == taskName) {
-            item.status = 'delete';
-            updatedTaskList = await deleteTask();
-            storeData.data[boardId].todo = updatedTaskList;
+    switch (action) {
+      case 'done':
+        if (item.name == taskName) {
+          item.status = 'done';
+          result = await updateBoardListInDB(storeData.data);
+          if (result) {
+            updatedTaskList = storeData.data[boardId].todo;
             setTaskList(updatedTaskList);
           }
+        }
 
-          break;
+        break;
 
-        case 'edit':
-          if (item.name == taskName) {
-            item.name = updateTaskData.name;
-            result = await updateBoardListInDB(storeData.data);
-            if (result) {
-              updatedTaskList = storeData.data[boardId].todo;
-              setTaskList(updatedTaskList);
-            }
+      case 'todo':
+        if (item.name == taskName) {
+          item.status = 'todo';
+          result = await updateBoardListInDB(storeData.data);
+          if (result) {
+            updatedTaskList = storeData.data[boardId].todo;
+            setTaskList(updatedTaskList);
           }
-          break;
-        default:
-          break;
-      }
+        }
+        break;
+
+      case 'doing':
+        if (item.name == taskName) {
+          item.status = 'doing';
+          result = await updateBoardListInDB(storeData.data);
+          if (result) {
+            updatedTaskList = storeData.data[boardId].todo;
+            setTaskList(updatedTaskList);
+          }
+        }
+        break;
+
+      case 'delete':
+        if (item.name == taskName) {
+          item.status = 'delete';
+          updatedTaskList = await deleteTask();
+          storeData.data[boardId].todo = updatedTaskList;
+          setTaskList(updatedTaskList);
+        }
+
+        break;
+
+      case 'edit':
+        if (item.name == taskName) {
+          item.name = updateTaskData.name;
+          result = await updateBoardListInDB(storeData.data);
+          if (result) {
+            updatedTaskList = storeData.data[boardId].todo;
+            setTaskList(updatedTaskList);
+          }
+        }
+        break;
+      default:
+        break;
     }
 
     setShowActionDialog(false);
@@ -209,13 +211,13 @@ export default function TaskList({route, navigation}) {
   ? It handles Action Menu Dialog [Send todo, mark doing, mark done, delete and edit]
   ***********************************************************************************/
   const handleActionDialog2 = async (action, data) => {
+    console.log('todomark', todoMark);
     switch (action) {
       case 'todo':
         console.log('todo called');
         await taskUpdate('todo', todoMark.name);
         break;
       case 'doing':
-        console.log('doing called');
         await taskUpdate('doing', todoMark.name);
         break;
       case 'done':
@@ -313,7 +315,7 @@ export default function TaskList({route, navigation}) {
                 icon="menu"
                 iconColor={MD3Colors.neutral50}
                 size={20}
-                onPress={() => showDoingActionDialogBox(item)}
+                onPress={() => showDoingActionDialogBox(item, index)}
               />
             )}
             onPress={() => showTaskInDetail(item, index)}
@@ -338,7 +340,7 @@ export default function TaskList({route, navigation}) {
                 icon="menu"
                 iconColor={MD3Colors.neutral50}
                 size={20}
-                onPress={() => showDoneActionDialogBox(item)}
+                onPress={() => showDoneActionDialogBox(item, index)}
               />
             )}
             onPress={() => showTaskInDetail(item, index)}
@@ -475,7 +477,7 @@ export default function TaskList({route, navigation}) {
         />
       )}
 
-        {/*! Shows Done Tab */}
+      {/*! Shows Done Tab */}
       {showDoneActionDialog && (
         <DoneTab
           hideme={() => setShowDoneActionDialog(false)}
@@ -492,8 +494,6 @@ export default function TaskList({route, navigation}) {
           detailData={taskInDetailData}
         />
       )}
-
-      
     </View>
   );
 }

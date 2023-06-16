@@ -62,6 +62,7 @@ export default function Login({navigation}) {
       }
     } catch (e) {
       console.log('err...', e);
+      alert(JSON.stringify(e));
     }
   }
 

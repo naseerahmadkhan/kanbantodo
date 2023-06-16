@@ -16,10 +16,10 @@ import {AppContext} from '../../store/store';
 import TaskInDetailScreen2 from './TaskInDetailScreen';
 import {
   AddNewTodoTaskDialog,
-  TodoActionDialog2,
-  DoingActionDialog2,
-  DoneActionDialog2,
-  UpdateTodoTaskDialog2,
+  UpdateTodoTaskDialog,
+  TodoTab,
+  DoingTab,
+  DoneTab,
 } from './ActionDialogs';
 import {styles} from '../../styles/styles';
 import Header from '../../components/header/Header';
@@ -205,6 +205,9 @@ export default function TaskList({route, navigation}) {
     setShowUpdatedTodo(false);
   };
 
+  /* ********************************************************************************
+  ? It handles Action Menu Dialog [Send todo, mark doing, mark done, delete and edit]
+  ***********************************************************************************/
   const handleActionDialog2 = async (action, data) => {
     switch (action) {
       case 'todo':
@@ -222,6 +225,7 @@ export default function TaskList({route, navigation}) {
         await taskUpdate('delete', todoMark.name);
         break;
       case 'edit':
+        // ! When on click edit option from menu control starts from here
         const boardId = route.params.data.id;
         let selectedTask = storeData.data[boardId].todo.filter(function (item) {
           //callback function
@@ -248,6 +252,7 @@ export default function TaskList({route, navigation}) {
         break;
 
       case 'update':
+        // ! When click on update button in dialog box. Updates data
         setIsSubmitted(true);
         await taskUpdate('edit', beforeUpdateTaskData.name);
         setIsSubmitted(false);
@@ -343,12 +348,13 @@ export default function TaskList({route, navigation}) {
     }
   });
 
+  // ! Hide New Todo Dialog
   const hideAddNewTodoTaskDialog = () => {
     console.log('hide me called');
     setShowDialog(false);
     setUpdateTaskData(null);
   };
-
+  // ! Add New Todo in List
   const addTodoInList = async () => {
     setIsSubmitted(true);
     let newTaskList = [];
@@ -438,10 +444,21 @@ export default function TaskList({route, navigation}) {
           isSubmitted={isSubmitted}
         />
       )}
+
+      {showUpdatedTodo && (
+        <UpdateTodoTaskDialog
+          hideme={() => setShowUpdatedTodo(false)}
+          isVisible={showUpdatedTodo}
+          handleAction={(action, data) => handleActionDialog2(action, data)}
+          data={updateTaskData}
+          setData={setUpdateTaskData}
+          isSubmitted={isSubmitted}
+        />
+      )}
       {/* {showActionDialog && todoActionDialog} */}
 
       {showActionDialog && (
-        <TodoActionDialog2
+        <TodoTab
           hideme={() => setShowActionDialog(false)}
           isVisible={showActionDialog}
           handleAction={action => handleActionDialog2(action)}
@@ -451,15 +468,16 @@ export default function TaskList({route, navigation}) {
       {/* {showDoingActionDialog && doingActionDialog} */}
 
       {showDoingActionDialog && (
-        <DoingActionDialog2
+        <DoingTab
           hideme={() => setShowDoingActionDialog(false)}
           isVisible={showDoingActionDialog}
           handleAction={action => handleActionDialog2(action)}
         />
       )}
 
+        {/*! Shows Done Tab */}
       {showDoneActionDialog && (
-        <DoneActionDialog2
+        <DoneTab
           hideme={() => setShowDoneActionDialog(false)}
           isVisible={showDoneActionDialog}
           handleAction={action => handleActionDialog2(action)}
@@ -475,16 +493,7 @@ export default function TaskList({route, navigation}) {
         />
       )}
 
-      {showUpdatedTodo && (
-        <UpdateTodoTaskDialog2
-          hideme={() => setShowUpdatedTodo(false)}
-          isVisible={showUpdatedTodo}
-          handleAction={(action, data) => handleActionDialog2(action, data)}
-          data={updateTaskData}
-          setData={setUpdateTaskData}
-          isSubmitted={isSubmitted}
-        />
-      )}
+      
     </View>
   );
 }

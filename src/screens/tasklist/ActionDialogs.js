@@ -1,7 +1,7 @@
 import React from 'react';
 import {List, Button, Dialog, Portal, TextInput} from 'react-native-paper';
 
-export function TodoActionDialog2({hideme, isVisible, handleAction}) {
+export function TodoTab({hideme, isVisible, handleAction}) {
   return (
     <Portal>
       <Dialog visible={isVisible} onDismiss={() => hideme()}>
@@ -39,7 +39,7 @@ export function TodoActionDialog2({hideme, isVisible, handleAction}) {
   );
 }
 
-export function DoingActionDialog2({hideme, isVisible, handleAction}) {
+export function DoingTab({hideme, isVisible, handleAction}) {
   return (
     <Portal>
       <Dialog visible={isVisible} onDismiss={() => hideme()}>
@@ -77,7 +77,7 @@ export function DoingActionDialog2({hideme, isVisible, handleAction}) {
   );
 }
 
-export function DoneActionDialog2({hideme, isVisible, handleAction}) {
+export function DoneTab({hideme, isVisible, handleAction}) {
   return (
     <Portal>
       <Dialog visible={isVisible} onDismiss={() => hideme()}>
@@ -120,7 +120,7 @@ export function AddNewTodoTaskDialog({
   hide,
   setTodoName,
   addTodoInList,
-  isSubmitted
+  isSubmitted,
 }) {
   return (
     <Portal>
@@ -145,7 +145,7 @@ export function AddNewTodoTaskDialog({
   );
 }
 
-export function UpdateTodoTaskDialog2({
+export function UpdateTodoTaskDialog({
   isVisible,
   hideme,
   setUpdatedTodoName,

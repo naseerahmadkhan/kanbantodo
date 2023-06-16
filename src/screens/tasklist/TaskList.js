@@ -15,10 +15,10 @@ import {AppContext} from '../../store/store';
 
 import TaskInDetailScreen2 from './TaskInDetailScreen';
 import {
+  AddNewTodoTaskDialog,
   TodoActionDialog2,
   DoingActionDialog2,
   DoneActionDialog2,
-  AddNewTodoTaskDialog2,
   UpdateTodoTaskDialog2,
 } from './ActionDialogs';
 import {styles} from '../../styles/styles';
@@ -45,6 +45,7 @@ export default function TaskList({route, navigation}) {
 
   const [taskInDetailData, setTaskInDetailData] = useState({});
   const listCounter = {todo: 0, doing: 0, done: 0};
+  const [isSubmitted, setIsSubmitted] = useState(false);
 
   const getDataFromDB = async () => {
     const todoTaskList = [];
@@ -112,7 +113,7 @@ export default function TaskList({route, navigation}) {
     }
   };
 
-  const deleteTask = () => {
+  const deleteTask = async () => {
     const boardId = route.params.data.id;
     let TaskListBeforeDel = storeData.data[boardId].todo;
     let updatedTaskListAfterDel = TaskListBeforeDel.filter(function (item) {
@@ -123,7 +124,7 @@ export default function TaskList({route, navigation}) {
       }
     });
 
-    let result = updateBoardListInDB(storeData.data);
+    let result = await updateBoardListInDB(storeData.data);
     if (!result) {
       return TaskListBeforeDel;
     }
@@ -137,12 +138,12 @@ export default function TaskList({route, navigation}) {
     let updatedTaskList;
     let result;
 
-    storeData.data[boardId].todo.forEach(item => {
+    for (const item of storeData.data[boardId].todo) {
       switch (action) {
         case 'done':
           if (item.name == taskName) {
             item.status = 'done';
-            result = updateBoardListInDB(storeData.data);
+            result = await updateBoardListInDB(storeData.data);
             if (result) {
               updatedTaskList = storeData.data[boardId].todo;
               setTaskList(updatedTaskList);
@@ -154,7 +155,7 @@ export default function TaskList({route, navigation}) {
         case 'todo':
           if (item.name == taskName) {
             item.status = 'todo';
-            result = updateBoardListInDB(storeData.data);
+            result = await updateBoardListInDB(storeData.data);
             if (result) {
               updatedTaskList = storeData.data[boardId].todo;
               setTaskList(updatedTaskList);
@@ -165,7 +166,7 @@ export default function TaskList({route, navigation}) {
         case 'doing':
           if (item.name == taskName) {
             item.status = 'doing';
-            result = updateBoardListInDB(storeData.data);
+            result = await updateBoardListInDB(storeData.data);
             if (result) {
               updatedTaskList = storeData.data[boardId].todo;
               setTaskList(updatedTaskList);
@@ -176,7 +177,7 @@ export default function TaskList({route, navigation}) {
         case 'delete':
           if (item.name == taskName) {
             item.status = 'delete';
-            updatedTaskList = deleteTask();
+            updatedTaskList = await deleteTask();
             storeData.data[boardId].todo = updatedTaskList;
             setTaskList(updatedTaskList);
           }
@@ -186,7 +187,7 @@ export default function TaskList({route, navigation}) {
         case 'edit':
           if (item.name == taskName) {
             item.name = updateTaskData.name;
-            result = updateBoardListInDB(storeData.data);
+            result = await updateBoardListInDB(storeData.data);
             if (result) {
               updatedTaskList = storeData.data[boardId].todo;
               setTaskList(updatedTaskList);
@@ -196,7 +197,7 @@ export default function TaskList({route, navigation}) {
         default:
           break;
       }
-    });
+    }
 
     setShowActionDialog(false);
     setShowDoingActionDialog(false);
@@ -204,21 +205,21 @@ export default function TaskList({route, navigation}) {
     setShowUpdatedTodo(false);
   };
 
-  const handleActionDialog2 = (action, data) => {
+  const handleActionDialog2 = async (action, data) => {
     switch (action) {
       case 'todo':
         console.log('todo called');
-        taskUpdate('todo', todoMark.name);
+        await taskUpdate('todo', todoMark.name);
         break;
       case 'doing':
         console.log('doing called');
-        taskUpdate('doing', todoMark.name);
+        await taskUpdate('doing', todoMark.name);
         break;
       case 'done':
-        taskUpdate('done', todoMark.name);
+        await taskUpdate('done', todoMark.name);
         break;
       case 'delete':
-        taskUpdate('delete', todoMark.name);
+        await taskUpdate('delete', todoMark.name);
         break;
       case 'edit':
         const boardId = route.params.data.id;
@@ -243,10 +244,13 @@ export default function TaskList({route, navigation}) {
         setShowDoneActionDialog(false);
 
         setShowUpdatedTodo(true);
+
         break;
 
       case 'update':
-        taskUpdate('edit', beforeUpdateTaskData.name);
+        setIsSubmitted(true);
+        await taskUpdate('edit', beforeUpdateTaskData.name);
+        setIsSubmitted(false);
 
         break;
       default:
@@ -255,28 +259,6 @@ export default function TaskList({route, navigation}) {
   };
 
   // !------------------------
-
-  const addTodoInList = async () => {
-    let newTaskList = [];
-    newTaskList = taskList;
-
-    let taskListBeforeAdding = taskList.slice();
-
-    const now = new Date();
-    const formattedDate = date.format(now, 'DD-MMMM-YYYY HH:mm:ss A');
-    let newTodoData = {name: todoName, date: formattedDate, status: 'todo'};
-    newTaskList.push(newTodoData);
-
-    taskListBeforeAdding.push(newTodoData);
-    let id = route.params.data.id;
-    storeData.data[id].todo = taskListBeforeAdding;
-    let result = updateBoardListInDB(storeData.data);
-    if (result) {
-      setTaskList(taskListBeforeAdding);
-    } else {
-      setShowDialog(false);
-    }
-  };
 
   const showTaskInDetail = (item, index) => {
     console.log('show task in detail', item, index);
@@ -361,6 +343,35 @@ export default function TaskList({route, navigation}) {
     }
   });
 
+  const hideAddNewTodoTaskDialog = () => {
+    console.log('hide me called');
+    setShowDialog(false);
+    setUpdateTaskData(null);
+  };
+
+  const addTodoInList = async () => {
+    setIsSubmitted(true);
+    let newTaskList = [];
+    newTaskList = taskList;
+
+    let taskListBeforeAdding = taskList.slice();
+
+    const now = new Date();
+    const formattedDate = date.format(now, 'DD-MMMM-YYYY HH:mm:ss A');
+    let newTodoData = {name: todoName, date: formattedDate, status: 'todo'};
+    newTaskList.push(newTodoData);
+
+    taskListBeforeAdding.push(newTodoData);
+    let id = route.params.data.id;
+    storeData.data[id].todo = taskListBeforeAdding;
+    let result = await updateBoardListInDB(storeData.data);
+    if (result) {
+      setTaskList(taskListBeforeAdding);
+    }
+    hideAddNewTodoTaskDialog();
+    setIsSubmitted(false);
+  };
+
   return (
     <View style={{flex: 1}}>
       <Header navigation={navigation} />
@@ -417,16 +428,14 @@ export default function TaskList({route, navigation}) {
       </View>
       {/* {showDialog && addNewTodoTaskDialog} */}
       {showDialog && (
-        <AddNewTodoTaskDialog2
+        <AddNewTodoTaskDialog
           isVisible={showDialog}
-          hideme={() => {
-            setShowDialog(false);
-            setUpdateTaskData(null);
-          }}
+          hide={() => hideAddNewTodoTaskDialog()}
           setTodoName={value => setTodoName(value)}
           addTodoInList={() => addTodoInList()}
           updateData={updateTaskData}
           setUpdateData={(action, data) => handleActionDialog2(action, data)}
+          isSubmitted={isSubmitted}
         />
       )}
       {/* {showActionDialog && todoActionDialog} */}
@@ -473,6 +482,7 @@ export default function TaskList({route, navigation}) {
           handleAction={(action, data) => handleActionDialog2(action, data)}
           data={updateTaskData}
           setData={setUpdateTaskData}
+          isSubmitted={isSubmitted}
         />
       )}
     </View>

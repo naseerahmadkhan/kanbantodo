@@ -24,9 +24,10 @@ export const LoginSchema = Yup.object().shape({
     // ),
     .required('Valid password required')
     .min(8, 'Password must be 8 characters long')
+    .max(12, 'Password length must be less than 12 characters long!')
     .matches(/[0-9]/, 'Password requires a number')
-    .matches(/[a-z]/, 'Password requires a lowercase letter')
-    // .matches(/[A-Z]/, 'Password requires an uppercase letter')
-    // .matches(/[^\w]/, 'Password requires a symbol'),
+    .matches(/[a-z]/, 'Password requires a lowercase letter'),
+  // .matches(/[A-Z]/, 'Password requires an uppercase letter')
+  // .matches(/[^\w]/, 'Password requires a symbol'),
   // https://regexr.com/3bfsi
 });

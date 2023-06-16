@@ -115,15 +115,16 @@ export function DoneActionDialog2({hideme, isVisible, handleAction}) {
   );
 }
 
-export function AddNewTodoTaskDialog2({
+export function AddNewTodoTaskDialog({
   isVisible,
-  hideme,
+  hide,
   setTodoName,
   addTodoInList,
+  isSubmitted
 }) {
   return (
     <Portal>
-      <Dialog visible={isVisible} onDismiss={() => hideme()}>
+      <Dialog visible={isVisible} onDismiss={() => hide()}>
         <Dialog.Title>Add Todo Task</Dialog.Title>
 
         <Dialog.Content>
@@ -136,8 +137,8 @@ export function AddNewTodoTaskDialog2({
           />
         </Dialog.Content>
         <Dialog.Actions>
-          <Button onPress={() => addTodoInList()}>Ok</Button>
-          <Button onPress={() => hideme()}>Cancel</Button>
+          <Button disabled={isSubmitted ? true : false} onPress={() => addTodoInList()}>Ok</Button>
+          <Button  disabled={isSubmitted ? true : false} onPress={() => hide()}>Cancel</Button>
         </Dialog.Actions>
       </Dialog>
     </Portal>
@@ -151,6 +152,7 @@ export function UpdateTodoTaskDialog2({
   handleAction,
   data,
   setData,
+  isSubmitted
 }) {
   console.log('update...', data);
 
@@ -170,8 +172,8 @@ export function UpdateTodoTaskDialog2({
           />
         </Dialog.Content>
         <Dialog.Actions>
-          <Button onPress={() => handleAction('update')}>update</Button>
-          <Button onPress={() => hideme()}>Cancel</Button>
+          <Button disabled={isSubmitted ? true : false} onPress={() => handleAction('update')}>update</Button>
+          <Button disabled={isSubmitted ? true : false} onPress={() => hideme()}>Cancel</Button>
         </Dialog.Actions>
       </Dialog>
     </Portal>

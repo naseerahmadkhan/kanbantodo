@@ -23,8 +23,11 @@ import {Formik} from 'formik';
 import Header from '../../components/header/Header';
 
 export default function Signup({navigation, route}) {
+  const [isSubmitted, setIsSubmitted] = useState(false);
+
   const handleSubmit = async values => {
     console.log('data', values);
+    setIsSubmitted(true)
 
     try {
       let signUpResponse = await createUserWithEmailAndPassword(
@@ -54,6 +57,7 @@ export default function Signup({navigation, route}) {
       let insertInFirebaseDB = await setDoc(doc(db, 'todo', values.email), {
         user: userRegDataForFirebaseDB,
       });
+      setIsSubmitted(false);
       Alert.alert('Congrats!', 'Account is Registered Successfully!');
       navigation.replace('Login');
     } catch (err) {
@@ -63,6 +67,8 @@ export default function Signup({navigation, route}) {
       } else {
         alert(JSON.stringify(err));
       }
+    }finally{
+      setIsSubmitted(false);
     }
   };
   const SignupView = (
@@ -170,6 +176,7 @@ export default function Signup({navigation, route}) {
                 style={{margin: 16}}
                 icon="home"
                 mode="contained"
+                disabled={isSubmitted ? true : false}
                 buttonColor={styles.btnPrimary}
                 onPress={() => handleSubmit(values)}>
                 Submit
@@ -183,6 +190,7 @@ export default function Signup({navigation, route}) {
           icon="arrow-right-bold"
           mode="contained"
           buttonColor={styles.btntertiary}
+          disabled={isSubmitted ? true : false}
           onPress={() => navigation.replace('Login')}>
           Already registerd! Back to Login.
         </Button>
